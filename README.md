@@ -11,9 +11,21 @@ This action runs a Gradle Lint check on all files in the repo and creates a Gith
 ## Example usage
 
 ```yaml
-uses: mobileposse/github-android-lint-action@v1
-with:
-  repo_token: ${{ secrets.GITHUB_TOKEN }}
+name: Android Lint
+on:
+  push:
+jobs:
+  lint:
+    name: Lint Check
+    runs-on: ubuntu-18.04
+    container: mobileposse/dev:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Lint
+        uses: mobileposse/github-android-lint-action@v1
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ## Publishing

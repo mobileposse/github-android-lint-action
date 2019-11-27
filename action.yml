@@ -1,0 +1,9 @@
+name: 'Github Android Lint Action'
+description: 'Runs a Gradle Lint check on all files in the repo and creates a Github "Check Run" report with the results.'
+author: 'Sean Schofield'
+inputs:
+  repo_token:
+    description: 'The GITHUB_TOKEN secret'
+runs:
+  using: 'node12'
+  main: 'lib/index.js'
