@@ -1,0 +1,36 @@
+{
+  "name": "github-android-lint-action",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Github Acton for performing Gradle lint on an Android project",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moblieposse/github-android-lint-action.git"
+  },
+  "keywords": [],
+  "author": "Sean Schofield",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.1.1",
+    "@actions/github": "^1.1.0"
+  },
+  "devDependencies": {
+    "@semantic-release/github": "^5.5.0",
+    "@types/node": "^12.7.8",
+    "@types/semver": "^6.0.2",
+    "@zeit/ncc": "^0.20.5",
+    "tslint": "^5.20.0",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^3.6.3"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "printWidth": 100
+  }
+}
