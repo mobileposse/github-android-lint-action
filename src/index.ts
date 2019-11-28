@@ -5,6 +5,7 @@ const { GITHUB_WORKSPACE } = process.env
 const OWNER = github.context.repo.owner
 const REPO = github.context.repo.repo
 const CHECK_NAME = 'Gradle Lint'
+const { execSync } = require('child_process')
 
 const getPrNumber = (): number | undefined => {
   const pullRequest = github.context.payload.pull_request
@@ -80,11 +81,9 @@ async function run(): Promise<void> {
     })
 
     // perform lint
-    const exec = require('child_process').exec
-
-    exec('cd client && ./gradlew lintMobileposseSandboxDebug', (err, stdout, stderr) => {
-      process.stdout.write(stdout)
-    })
+    const { execSync } = require('child_process')
+    // you can set options.stdio if you want it to go elsewhere
+    let stdout = execSync('cd client && ./gradlew lintMobileposseSandboxDebug')
 
     // const report = lint(files)
     // const payload = processReport(report)
