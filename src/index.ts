@@ -69,7 +69,9 @@ async function run(): Promise<void> {
     const oktokit = new github.GitHub(token)
     core.debug('Fetching files to lint.')
 
-    await oktokit.checks.create({
+    const {
+      data: { id: checkId }
+    } = await oktokit.checks.create({
       owner: OWNER,
       repo: REPO,
       started_at: new Date().toISOString(),
@@ -78,23 +80,20 @@ async function run(): Promise<void> {
       name: CHECK_NAME
     })
 
-    // perform lin
+    // perform lint
     exec('cd client && ./gradlew lintMobileposseSandboxDebug')
 
     // const report = lint(files)
     // const payload = processReport(report)
 
-    // await oktokit.checks.update({
-    //   owner: OWNER,
-    //   repo: REPO,
-    //   completed_at: new Date().toISOString(),
-    //   status: 'completed',
-    //   check_run_id: checkId,
-    //   ...payload
-    // })
-    // } else {
-    //   core.info('No files to lint.')
-    // }
+    await oktokit.checks.update({
+      owner: OWNER,
+      repo: REPO,
+      completed_at: new Date().toISOString(),
+      status: 'completed',
+      check_run_id: checkId
+      // ...payload
+    })
   } catch (err) {
     core.setFailed(err.message ? err.message : 'Error linting files.')
   }
