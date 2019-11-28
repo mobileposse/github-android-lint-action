@@ -1,7 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import { ChecksUpdateParams, ChecksUpdateParamsOutputAnnotations } from '@octokit/rest'
-const { exec } = require('shelljs')
 const { GITHUB_WORKSPACE } = process.env
 const OWNER = github.context.repo.owner
 const REPO = github.context.repo.repo
@@ -81,7 +80,11 @@ async function run(): Promise<void> {
     })
 
     // perform lint
-    exec('cd client && ./gradlew lintMobileposseSandboxDebug')
+    const exec = require('child_process').exec
+
+    exec('cd client && ./gradlew lintMobileposseSandboxDebug', (err, stdout, stderr) => {
+      process.stdout.write(stdout)
+    })
 
     // const report = lint(files)
     // const payload = processReport(report)

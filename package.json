@@ -17,8 +17,7 @@
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.1.1",
-    "@actions/github": "^1.1.0",
-    "shelljs": "^0.8.3"
+    "@actions/github": "^1.1.0"
   },
   "devDependencies": {
     "@semantic-release/github": "^5.5.0",
