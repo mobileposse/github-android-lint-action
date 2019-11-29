@@ -85,7 +85,8 @@ async function run(): Promise<void> {
 
   try {
     const oktokit = new github.GitHub(token)
-    core.debug('Fetching files to lint.')
+    core.debug('Creating check report')
+    // core.debug('Fetching files to lint.')
 
     const {
       data: { id: checkId }
@@ -99,7 +100,7 @@ async function run(): Promise<void> {
     })
 
     // const report = lint(files)
-    const payload = processReport()
+    const payload = await processReport()
 
     await oktokit.checks.update({
       owner: OWNER,
