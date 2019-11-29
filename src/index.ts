@@ -99,15 +99,15 @@ async function run(): Promise<void> {
     })
 
     // const report = lint(files)
-    // const payload = processReport(report)
+    const payload = processReport()
 
     await oktokit.checks.update({
       owner: OWNER,
       repo: REPO,
       completed_at: new Date().toISOString(),
       status: 'completed',
-      check_run_id: checkId
-      // ...payload
+      check_run_id: checkId,
+      ...payload
     })
   } catch (err) {
     core.setFailed(err.message ? err.message : 'Error linting files.')
