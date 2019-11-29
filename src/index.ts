@@ -26,6 +26,25 @@ const getSha = (): string => {
   return pullRequest.head.sha
 }
 
+const processReport = async (): Promise<Partial<ChecksUpdateParams>> => {
+  const annotations: ChecksUpdateParamsOutputAnnotations[] = []
+
+  return {
+    conclusion: 'success',
+    output: {
+      title: CHECK_NAME,
+      summary: '0 error(s) found',
+      annotations
+    }
+    // conclusion: errorCount > 0 ? 'failure' : 'success',
+    // output: {
+    //   title: CHECK_NAME,
+    //   summary: `${errorCount} error(s) found`,
+    //   annotations
+    // }
+  }
+}
+
 // function processReport(report: CLIEngine.LintReport): Partial<ChecksUpdateParams> {
 //   const { errorCount, results } = report
 //   const annotations: ChecksUpdateParamsOutputAnnotations[] = []
