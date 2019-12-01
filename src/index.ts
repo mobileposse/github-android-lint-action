@@ -9,16 +9,6 @@ const OWNER = github.context.repo.owner
 const REPO = github.context.repo.repo
 const CHECK_NAME = 'Lint Report'
 
-// const getPrNumber = (): number | undefined => {
-//   const pullRequest = github.context.payload.pull_request
-
-//   if (!pullRequest) {
-//     return
-//   }
-
-//   return pullRequest.number
-// }
-
 const getSha = (): string => {
   const pullRequest = github.context.payload.pull_request
 
@@ -35,6 +25,10 @@ const mapSeverityLevel = (severity: string) => {
   } else {
     return 'failure'
   }
+}
+
+const wrap = (text: string, limit: number) => {
+  return text.replace(new RegExp(`(?![^\\n]{1,${limit}}$)([^\\n]{1,${limit}})\\s`, 'g'), '$1\n')
 }
 
 const processReport = async (filename: string): Promise<Partial<ChecksUpdateParams>> => {
@@ -54,13 +48,11 @@ const processReport = async (filename: string): Promise<Partial<ChecksUpdatePara
       end_line: parseInt(location.line),
       title: data.summary,
       annotation_level: mapSeverityLevel(data.severity),
-      message: data.message,
-      raw_details: data.explanation
+      message: wrap(data.message, 80),
+      raw_details: wrap(data.explanation, 80)
     }
     console.log(annotation)
     annotations.push(annotation)
-
-    break // TEMPORARY HACK
   }
 
   const issueCount = annotations.length
@@ -77,12 +69,10 @@ const processReport = async (filename: string): Promise<Partial<ChecksUpdatePara
 
 async function run(): Promise<void> {
   const token = core.getInput('repo_token', { required: true })
-  // const prNumber = getPrNumber()
 
   try {
     const oktokit = new github.GitHub(token)
     core.debug('Creating check report')
-    // core.debug('Fetching files to lint.')
 
     const {
       data: { id: checkId }
