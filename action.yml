@@ -4,6 +4,8 @@ author: 'Sean Schofield'
 inputs:
   repo_token:
     description: 'The GITHUB_TOKEN secret'
+  filename:
+    description: 'the filename of the XML lint report produced by gradle'
 runs:
   using: 'node12'
   main: 'lib/index.js'

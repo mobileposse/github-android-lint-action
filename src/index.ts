@@ -1,20 +1,23 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import { ChecksUpdateParams, ChecksUpdateParamsOutputAnnotations } from '@octokit/rest'
+import * as fs from 'fs'
+import * as xml2js from 'xml2js'
+
 const { GITHUB_WORKSPACE } = process.env
 const OWNER = github.context.repo.owner
 const REPO = github.context.repo.repo
-const CHECK_NAME = 'Gradle Lint'
+const CHECK_NAME = 'Lint Report'
 
-const getPrNumber = (): number | undefined => {
-  const pullRequest = github.context.payload.pull_request
+// const getPrNumber = (): number | undefined => {
+//   const pullRequest = github.context.payload.pull_request
 
-  if (!pullRequest) {
-    return
-  }
+//   if (!pullRequest) {
+//     return
+//   }
 
-  return pullRequest.number
-}
+//   return pullRequest.number
+// }
 
 const getSha = (): string => {
   const pullRequest = github.context.payload.pull_request
@@ -26,62 +29,56 @@ const getSha = (): string => {
   return pullRequest.head.sha
 }
 
-const processReport = async (): Promise<Partial<ChecksUpdateParams>> => {
-  const annotations: ChecksUpdateParamsOutputAnnotations[] = []
-
-  return {
-    conclusion: 'success',
-    output: {
-      title: CHECK_NAME,
-      summary: '0 error(s) found',
-      annotations
-    }
-    // conclusion: errorCount > 0 ? 'failure' : 'success',
-    // output: {
-    //   title: CHECK_NAME,
-    //   summary: `${errorCount} error(s) found`,
-    //   annotations
-    // }
+const mapSeverityLevel = (severity: string) => {
+  if (severity === 'Warning') {
+    return 'warning'
+  } else {
+    return 'failure'
   }
 }
 
-// function processReport(report: CLIEngine.LintReport): Partial<ChecksUpdateParams> {
-//   const { errorCount, results } = report
-//   const annotations: ChecksUpdateParamsOutputAnnotations[] = []
+const processReport = async (filename: string): Promise<Partial<ChecksUpdateParams>> => {
+  const annotations: ChecksUpdateParamsOutputAnnotations[] = []
 
-//   for (const result of results) {
-//     const { filePath, messages } = result
+  const contents = fs.readFileSync(filename, 'utf8')
+  const parser = new xml2js.Parser()
+  const result = await parser.parseStringPromise(contents)
 
-//     for (const lintMessage of messages) {
-//       const { line, severity, ruleId, message } = lintMessage
+  for (const issue of result.issues.issue) {
+    const data = issue.$
+    const location = issue.location[0].$
 
-//       if (severity !== 2) {
-//         continue
-//       }
+    const annotation: ChecksUpdateParamsOutputAnnotations = {
+      path: location.file.replace(`${GITHUB_WORKSPACE}/`, ''),
+      start_line: location.line,
+      end_line: location.line,
+      start_column: location.column,
+      title: data.summary,
+      annotation_level: mapSeverityLevel(data.severity),
+      message: data.message,
+      raw_details: data.explanation
+    }
+    console.log(annotation)
+    annotations.push(annotation)
 
-//       annotations.push({
-//         path: filePath.replace(`${GITHUB_WORKSPACE}/`, ''),
-//         start_line: line,
-//         end_line: line,
-//         annotation_level: 'failure',
-//         message: `[${ruleId}] ${message}`
-//       })
-//     }
-//   }
+    break // TEMPORARY HACK
+  }
 
-//   return {
-//     conclusion: errorCount > 0 ? 'failure' : 'success',
-//     output: {
-//       title: CHECK_NAME,
-//       summary: `${errorCount} error(s) found`,
-//       annotations
-//     }
-//   }
-// }
+  const issueCount = annotations.length
+
+  return {
+    conclusion: issueCount === 0 ? 'success' : 'failure',
+    output: {
+      title: CHECK_NAME,
+      summary: `${issueCount} error(s) found`,
+      annotations
+    }
+  }
+}
 
 async function run(): Promise<void> {
   const token = core.getInput('repo_token', { required: true })
-  const prNumber = getPrNumber()
+  // const prNumber = getPrNumber()
 
   try {
     const oktokit = new github.GitHub(token)
@@ -99,9 +96,10 @@ async function run(): Promise<void> {
       name: CHECK_NAME
     })
 
-    // const report = lint(files)
-    const payload = await processReport()
+    const filename = core.getInput('filename', { required: true })
+    const payload = await processReport(filename)
 
+    console.log(payload)
     await oktokit.checks.update({
       owner: OWNER,
       repo: REPO,

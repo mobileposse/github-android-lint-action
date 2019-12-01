@@ -1,2 +1,4 @@
 node_modules
 dist
+lint-results.xml
+results.json
