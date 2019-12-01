@@ -91,35 +91,35 @@ const processReport = async (filename: string): Promise<Partial<ChecksUpdatePara
 async function run(): Promise<void> {
   const token = core.getInput('repo_token', { required: true })
 
-  // try {
-  const oktokit = new github.GitHub(token)
-  core.debug('Creating check report')
+  try {
+    const oktokit = new github.GitHub(token)
+    core.debug('Creating check report')
 
-  // const {
-  //   data: { id: checkId }
-  // } = await oktokit.checks.create({
-  //   owner: OWNER,
-  //   repo: REPO,
-  //   started_at: new Date().toISOString(),
-  //   head_sha: getSha(),
-  //   status: 'in_progress',
-  //   name: CHECK_NAME
-  // })
+    const {
+      data: { id: checkId }
+    } = await oktokit.checks.create({
+      owner: OWNER,
+      repo: REPO,
+      started_at: new Date().toISOString(),
+      head_sha: getSha(),
+      status: 'in_progress',
+      name: CHECK_NAME
+    })
 
-  const filename = core.getInput('filename', { required: true })
-  const payload = await processReport(filename)
-  console.log(payload)
-  //   await oktokit.checks.update({
-  //     owner: OWNER,
-  //     repo: REPO,
-  //     completed_at: new Date().toISOString(),
-  //     status: 'completed',
-  //     check_run_id: checkId,
-  //     ...payload
-  //   })
-  // } catch (err) {
-  //   core.setFailed(err.message ? err.message : 'Error linting files.')
-  // }
+    const filename = core.getInput('filename', { required: true })
+    const payload = await processReport(filename)
+    console.log(payload)
+    await oktokit.checks.update({
+      owner: OWNER,
+      repo: REPO,
+      completed_at: new Date().toISOString(),
+      status: 'completed',
+      check_run_id: checkId,
+      ...payload
+    })
+  } catch (err) {
+    core.setFailed(err.message ? err.message : 'Error linting files.')
+  }
 }
 
 run()
