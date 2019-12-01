@@ -72,7 +72,14 @@ const processReport = async (filename: string): Promise<Partial<ChecksUpdatePara
       }
 
       console.log(annotation)
-      annotations.push(annotation)
+
+      if (annotations.length < 50) {
+        annotations.push(annotation)
+      }
+    }
+
+    if (annotations.length == 50) {
+      break
     }
   }
 
