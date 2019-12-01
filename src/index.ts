@@ -52,7 +52,6 @@ const processReport = async (filename: string): Promise<Partial<ChecksUpdatePara
       path: location.file.replace(`${GITHUB_WORKSPACE}/`, ''),
       start_line: parseInt(location.line),
       end_line: parseInt(location.line),
-      start_column: parseInt(location.column),
       title: data.summary,
       annotation_level: mapSeverityLevel(data.severity),
       message: data.message,
