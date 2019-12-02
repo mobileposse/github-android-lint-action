@@ -7,9 +7,9 @@ inputs:
   filename:
     description: 'the filename of the XML lint report produced by gradle'
   exclude:
-    description: 'Comma delimited list of report ID's to exclude from check report'
+    description: 'Comma delimited list of report IDs to exclude from check report'
   only:
-    description: 'Check report will be limited to this comma delimited list of issue ID's'
+    description: 'Check report will be limited to this comma delimited list of issue IDs'
   report_name:
     description: 'Name of the Github check report to be created'
 runs:
