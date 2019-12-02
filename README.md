@@ -8,6 +8,18 @@ This action runs a Gradle Lint check on all files in the repo and creates a Gith
 
 **Required** Github token to use for creating the check run
 
+### `filename`
+
+**Required** XML lint report produced by gradle
+
+### `exclude`
+
+Comma delimited list of report ID's to exclude from check report
+
+### `only`
+
+Check report will be limited to this comma delimited list of issue ID's
+
 ## Example usage
 
 ```yaml
@@ -26,6 +38,8 @@ jobs:
         uses: mobileposse/github-android-lint-action@v1
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
+          filename: [filename goes here]
+          exclude: 'MissingTranslation'
 ```
 
 ## Publishing

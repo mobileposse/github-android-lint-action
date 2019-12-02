@@ -38,15 +38,27 @@ const wrap = (text: string, limit: number) => {
   return text.replace(new RegExp(`(?![^\\n]{1,${limit}}$)([^\\n]{1,${limit}})\\s`, 'g'), '$1\n')
 }
 
-const processReport = async (filename: string): Promise<Partial<ChecksUpdateParams>> => {
+const processReport = async (): Promise<Partial<ChecksUpdateParams>> => {
   const annotations: ChecksUpdateParamsOutputAnnotations[] = []
 
+  const filename = core.getInput('filename', { required: true })
+  const exclude = core.getInput('exclude')
+  const only = core.getInput('only')
   const contents = fs.readFileSync(filename, 'utf8')
   const parser = new xml2js.Parser()
   const result = await parser.parseStringPromise(contents)
 
   for (const issue of result.issues.issue) {
     const data = issue.$
+
+    // optionally limit the check run report to certain id's
+    if (only && !only.split(',').includes(data.id)) {
+      console.log(`excluding issue: ${data.summary}`)
+      continue
+    } else if (exclude && exclude.split(',').includes(data.id)) {
+      console.log(`excluding issue: ${data.summary}`)
+      continue
+    }
 
     for (const entry of issue.location) {
       const location = entry.$
@@ -102,28 +114,27 @@ async function run(): Promise<void> {
     const oktokit = new github.GitHub(token)
     core.debug('Creating check report')
 
-    const {
-      data: { id: checkId }
-    } = await oktokit.checks.create({
-      owner: OWNER,
-      repo: REPO,
-      started_at: new Date().toISOString(),
-      head_sha: getSha(),
-      status: 'in_progress',
-      name: CHECK_NAME
-    })
+    // const {
+    //   data: { id: checkId }
+    // } = await oktokit.checks.create({
+    //   owner: OWNER,
+    //   repo: REPO,
+    //   started_at: new Date().toISOString(),
+    //   head_sha: getSha(),
+    //   status: 'in_progress',
+    //   name: CHECK_NAME
+    // })
 
-    const filename = core.getInput('filename', { required: true })
-    const payload = await processReport(filename)
+    const payload = await processReport()
     console.log(payload)
-    await oktokit.checks.update({
-      owner: OWNER,
-      repo: REPO,
-      completed_at: new Date().toISOString(),
-      status: 'completed',
-      check_run_id: checkId,
-      ...payload
-    })
+    // await oktokit.checks.update({
+    //   owner: OWNER,
+    //   repo: REPO,
+    //   completed_at: new Date().toISOString(),
+    //   status: 'completed',
+    //   check_run_id: checkId,
+    //   ...payload
+    // })
   } catch (err) {
     core.setFailed(err.message ? err.message : 'Error linting files.')
   }
