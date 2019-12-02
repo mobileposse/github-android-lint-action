@@ -10,6 +10,8 @@ inputs:
     description: 'Comma delimited list of report ID's to exclude from check report'
   only:
     description: 'Check report will be limited to this comma delimited list of issue ID's'
+  report_name:
+    description: 'Name of the Github check report to be created'
 runs:
   using: 'node12'
   main: 'lib/index.js'

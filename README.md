@@ -20,6 +20,10 @@ Comma delimited list of report ID's to exclude from check report
 
 Check report will be limited to this comma delimited list of issue ID's
 
+### `report_name`
+
+Name of the Github check report to be created
+
 ## Example usage
 
 ```yaml
@@ -40,6 +44,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           filename: [filename goes here]
           exclude: 'MissingTranslation'
+          report_name: 'Gradle Lint Results'
 ```
 
 ## Publishing
@@ -48,10 +53,4 @@ Compile a version of `index.js` that includes all dependencies
 
 ```
 npx ncc build dist/index.js -o lib
-```
-
-## Local Testing
-
-```
-INPUT_REPO_TOKEN='your token here' GITHUB_REPOSITORY='org/repo' node lib/index.js
 ```

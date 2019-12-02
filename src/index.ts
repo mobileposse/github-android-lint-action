@@ -7,7 +7,6 @@ import * as xml2js from 'xml2js'
 const { GITHUB_WORKSPACE } = process.env
 const OWNER = github.context.repo.owner
 const REPO = github.context.repo.repo
-const CHECK_NAME = 'Lint Report'
 
 const getSha = (): string => {
   const pullRequest = github.context.payload.pull_request
@@ -47,6 +46,7 @@ const processReport = async (): Promise<Partial<ChecksUpdateParams>> => {
   const contents = fs.readFileSync(filename, 'utf8')
   const parser = new xml2js.Parser()
   const result = await parser.parseStringPromise(contents)
+  const reportName = core.getInput('report_name') || 'Lint Report'
 
   for (const issue of result.issues.issue) {
     const data = issue.$
@@ -100,7 +100,7 @@ const processReport = async (): Promise<Partial<ChecksUpdateParams>> => {
   return {
     conclusion: issueCount === 0 ? 'success' : 'failure',
     output: {
-      title: CHECK_NAME,
+      title: reportName,
       summary: `${issueCount} error(s) found`,
       annotations
     }
@@ -114,27 +114,28 @@ async function run(): Promise<void> {
     const oktokit = new github.GitHub(token)
     core.debug('Creating check report')
 
-    // const {
-    //   data: { id: checkId }
-    // } = await oktokit.checks.create({
-    //   owner: OWNER,
-    //   repo: REPO,
-    //   started_at: new Date().toISOString(),
-    //   head_sha: getSha(),
-    //   status: 'in_progress',
-    //   name: CHECK_NAME
-    // })
+    const {
+      data: { id: checkId }
+    } = await oktokit.checks.create({
+      owner: OWNER,
+      repo: REPO,
+      started_at: new Date().toISOString(),
+      head_sha: getSha(),
+      status: 'in_progress',
+      name: core.getInput('report_name') || 'Lint Report'
+    })
 
     const payload = await processReport()
     console.log(payload)
-    // await oktokit.checks.update({
-    //   owner: OWNER,
-    //   repo: REPO,
-    //   completed_at: new Date().toISOString(),
-    //   status: 'completed',
-    //   check_run_id: checkId,
-    //   ...payload
-    // })
+
+    await oktokit.checks.update({
+      owner: OWNER,
+      repo: REPO,
+      completed_at: new Date().toISOString(),
+      status: 'completed',
+      check_run_id: checkId,
+      ...payload
+    })
   } catch (err) {
     core.setFailed(err.message ? err.message : 'Error linting files.')
   }
